@@ -2,7 +2,11 @@ import Vue from 'vue'
 import App from './App.vue'
 import VueRouter from 'vue-router'
 
+import Notes from './components/Notes'
+import Home from './components/Home'
+
 import './assets/index.css';
+
 Vue.config.productionTip = false
 Vue.use(VueRouter)
 
