@@ -11,7 +11,8 @@
         <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mt-3 float-left">Add New Note</button>
 
         <div class="clear-both mt-20">
-            <timeline :data="patient.notes"></timeline>
+            <timeline v-if="! isLoading" :data="patient.notes"></timeline>
+            <loader v-else></loader>
         </div>
 
         <modal v-if="showModal" @close="showModal = false" class="text-left">
@@ -41,6 +42,7 @@
     import { apiClient } from '@/api.js'
     import Modal from './Modal'
     import Timeline from './Timeline'
+    import Loader from './Loader'
 
     export default {
         name: 'Notes',
@@ -48,18 +50,19 @@
             return {
                 patient: {},
                 showModal: false,
-                content: ''
+                content: '',
+                isLoading: true,
             };
         },
-        components: {Modal, Timeline},
+        components: {Modal, Timeline, Loader},
         beforeMount() {
             apiClient.get('/sanctum/csrf-cookie')
                 .then(() => {
                     apiClient.get('/api/patients/' + this.$route.params.id)
                         .then(response => {
                             if (response.status == 200) {
-                                console.log(response.data)
                                 this.patient = response.data;
+                                this.isLoading = false
                             }
                         }).catch(error => {
                             console.error(error);

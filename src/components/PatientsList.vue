@@ -13,7 +13,7 @@
           class="border-2 border-green-500 rounded w-1/4 py-2 px-4">
     </div>
 
-    <table class="mt-3 mx-auto w-full table-auto">
+    <table v-if="! isLoading" class="mt-3 mx-auto w-full table-auto">
       <thead>
         <tr class="border-b border-green-500 pb-3">
           <th class="text-left py-3 text-lg">Name</th>
@@ -27,6 +27,7 @@
         <Patient v-for="patient in filteredPatients" :key="patient.id" :data="patient" />
       </tbody>
     </table>
+    <loader v-else></loader>
 
     <!-- Add New Patient Modal -->
     <modal v-if="showModal" @close="showModal = false" class="text-left">
@@ -81,11 +82,12 @@
   import Patient from './Patient'
   import { apiClient } from '@/api.js'
   import Modal from './Modal';
+  import Loader from './Loader';
 
   export default {
     name: 'PatientsList',
     components: {
-      Patient, Modal
+      Patient, Modal, Loader
     },
     props: ['isLoggedin'],
     data: function () {
@@ -93,15 +95,16 @@
         patients: [],
         keywords: '',
         patient: {},
-        showModal: false
+        showModal: false,
+        isLoading: true
       }
     },
     mounted() {
       if (this.isLoggedin) {
         apiClient.get('/api/patients')
           .then(response => {
-              console.log(response.data);
               this.patients = response.data;
+              this.isLoading = false;
           })
           .catch(error => console.error(error));
       }

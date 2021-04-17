@@ -1,5 +1,7 @@
 <template>
+  <div class="lds-container">
     <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+  </div>
 </template>
 
 <script>
@@ -10,8 +12,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.lds-container {
+  text-align: center;
+}
 .lds-roller {
-  display: block;
+  display: inline-block;
   position: relative;
   width: 80px;
   height: 80px;
