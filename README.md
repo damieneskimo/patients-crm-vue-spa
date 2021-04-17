@@ -2,7 +2,9 @@
 
 This project is a Vue Single Page Application (SPA) for managing patients data. SPA will retrieve the data from API in the project: https://github.com/damieneskimo/patients-crm. <br />
 
-It uses Axios as the http client, Vue Router for the routing and Tailwind CSS for basic styling.
+It uses Axios as the http client, Vue Router for the routing and Tailwind CSS for basic styling. <br />
+
+> Note: If you are using a different domain and port for the backend, please change it accordingly in api.js file
 
 ## Project setup
 ```
