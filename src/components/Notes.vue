@@ -62,10 +62,14 @@
                         .then(response => {
                             if (response.status == 200) {
                                 this.patient = response.data;
-                                this.isLoading = false
+                                this.isLoading = false;
                             }
                         }).catch(error => {
                             console.error(error);
+                            // if there is error retrieving patient, then it's not authenticated
+                            if (error.response.status === 401) {
+                                this.$router.push('/')
+                            }
                         });
                 });
         },
