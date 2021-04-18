@@ -5,7 +5,6 @@
       <button @click="logout" class="py-2 px-4 rounded bg-green-500 text-lg">Logout</button>  
     </div>
 
-    <router-view></router-view>
     <div class="text-left mt-5">
       <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mr-3">Add New Patient</button>
       <input v-model="keywords"
