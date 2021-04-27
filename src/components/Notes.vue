@@ -5,18 +5,18 @@
             <router-link 
                 :to="{ name: 'home' }"
                 class="text-green-500">
-                {{ patient.name }} 
+                {{ patientName }} 
             </router-link>
         </h1>
         <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mt-3 float-left">Add New Note</button>
 
         <div class="clear-both mt-20">
-            <timeline v-if="! isLoading" :data="patient.notes"></timeline>
+            <timeline v-if="! isLoading" :data="notes"></timeline>
             <loader v-else></loader>
         </div>
 
         <modal v-if="showModal" @close="showModal = false" class="text-left">
-            <h3 slot="header">Add New Note for {{ patient.name }}</h3>
+            <h3 slot="header">Add New Note for {{ patientName }}</h3>
             <form slot="body">
                 <div class="my-5">
                     <textarea 
@@ -48,7 +48,8 @@
         name: 'Notes',
         data: function () {
             return {
-                patient: {},
+                patientName: '',
+                notes: [],
                 showModal: false,
                 content: '',
                 isLoading: true,
@@ -58,10 +59,11 @@
         beforeMount() {
             apiClient.get('/sanctum/csrf-cookie')
                 .then(() => {
-                    apiClient.get('/api/patients/' + this.$route.params.id)
+                    apiClient.get('/api/patients/' + this.$route.params.id + '/notes')
                         .then(response => {
                             if (response.status == 200) {
-                                this.patient = response.data;
+                                this.notes = response.data.data;
+                                this.patientName = response.data.meta.patient_name;
                                 this.isLoading = false;
                             }
                         }).catch(error => {

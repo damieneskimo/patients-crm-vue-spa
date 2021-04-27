@@ -102,7 +102,7 @@
       if (this.isLoggedin) {
         apiClient.get('/api/patients')
           .then(response => {
-              this.patients = response.data;
+              this.patients = response.data.data;
               this.isLoading = false;
           })
           .catch(error => console.error(error));
