@@ -4,6 +4,8 @@ import VueRouter from 'vue-router'
 
 import Notes from './components/Notes'
 import Home from './components/Home'
+import PatientsList from './components/PatientsList'
+import LoginForm from './components/LoginForm'
 
 import './assets/index.css';
 
@@ -11,8 +13,10 @@ Vue.config.productionTip = false
 Vue.use(VueRouter)
 
 const routes = [
+  { path: '/patients', name: 'patients', component: PatientsList, props: true },
   { path: '/patients/:id/notes', name: 'notes', component: Notes },
-  { path: '/', name: 'home', component: Home }
+  { path: '/login', name: 'login', component: LoginForm },
+  { path: '/', redirect: '/patients' },
 ]
 
 const router = new VueRouter({

@@ -1,10 +1,10 @@
 <template>
-  <div>
-        <h3 class="text-2xl">Patients CRM Login</h3>
-        <form>
+  <div class="min-h-screen flex justify-center items-center text-center">
+        <form class="w-1/3">
+            <h3 class="text-2xl">Patients CRM Login</h3>
             <div class="my-5">
                 <input
-                    class="w-1/4 border-2 rounded p-3 border-green-500"
+                    class="w-full border-2 rounded p-3 border-green-500"
                     type="email"
                     name="email"
                     placeholder="Email"
@@ -14,7 +14,7 @@
             </div>
             <div class="my-5">
                 <input
-                    class="w-1/4 border-2 rounded p-3 border-green-500"
+                    class="w-full border-2 rounded p-3 border-green-500"
                     type="password"
                     name="password"
                     placeholder="Password"
@@ -76,6 +76,7 @@ export default {
             this.loggedIn = true;
             sessionStorage.setItem('loggedIn', 'true');
             this.$emit('listenLoginEvent', this.loggedIn)
+            this.$router.push({name: 'patients'})
         },
     }
 }

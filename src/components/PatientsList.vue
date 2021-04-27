@@ -1,10 +1,5 @@
 <template>
   <div>
-    <div class="flex justify-between">
-      <h1 class="text-2xl">Patients</h1>
-      <button @click="logout" class="py-2 px-4 rounded bg-green-500 text-lg">Logout</button>  
-    </div>
-
     <div class="text-left mt-5">
       <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mr-3">Add New Patient</button>
       <input v-model="keywords"
@@ -25,6 +20,8 @@
       <tbody class="text-left">
         <Patient v-for="patient in filteredPatients" :key="patient.id" :data="patient" />
       </tbody>
+
+      <!-- <pagination v-model="page" :records="15"  @paginate="myCallback"/> -->
     </table>
     <loader v-else></loader>
 
@@ -82,6 +79,7 @@
   import { apiClient } from '@/api.js'
   import Modal from './Modal';
   import Loader from './Loader';
+  // import Pagination from 'vue-pagination-2';
 
   export default {
     name: 'PatientsList',
@@ -95,17 +93,33 @@
         keywords: '',
         patient: {},
         showModal: false,
-        isLoading: true
+        isLoading: true,
+        page: 1,
       }
+    },
+    beforeRouteEnter (to, from, next) {
+      next(vm => {
+        console.log(vm.isLoggedin)
+        if (! vm.isLoggedin) {
+          vm.$router.push('login')
+        }
+      })
     },
     mounted() {
       if (this.isLoggedin) {
         apiClient.get('/api/patients')
           .then(response => {
+            console.log('here');
+            console.log(response);
               this.patients = response.data.data;
               this.isLoading = false;
           })
-          .catch(error => console.error(error));
+          .catch((error) => {
+            if (error.response.status === 401) {
+              // set logged in to false
+            }
+            console.log(error.response);
+          });
       }
     },
     computed: {
@@ -117,16 +131,6 @@
       }
     },
     methods: {
-      logout() {
-        apiClient.post('/logout').then(response => {
-            if (response.status == 204) {
-              sessionStorage.setItem('loggedIn', 'false');
-              this.$emit('listenLogoutEvent', false)
-            }
-          }).catch(error => {
-              console.error(error);
-          });
-      },
       addNewPatient() {
         apiClient.get('/sanctum/csrf-cookie')
           .then(() => {

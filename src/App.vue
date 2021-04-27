@@ -1,22 +1,31 @@
 <template>
-  <div id="app" class="px-40">
-      <router-view></router-view>
+  <div id="app">
+    <layout :isLoggedin="isLoggedin" @listenLogoutEvent="updateLoginStatus">
+      <router-view :isLoggedin="isLoggedin" @listenLoginEvent="updateLoginStatus"></router-view>
+    </layout>
   </div>
 </template>
 
 <script>
+import Layout from './components/Layout.vue';
+
 export default {
-    name: 'App'
+    components: { Layout },
+    name: 'App',
+    data() {
+      return {
+        isLoggedin: false
+      }
+    },
+    beforeMount() {
+      if (typeof window !== 'undefined' && sessionStorage.getItem('loggedIn') == 'true') {
+        this.isLoggedin = true;
+      }
+    },
+    methods: {
+      updateLoginStatus(value) {
+        this.isLoggedin = value
+      }
+    }
 }
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
