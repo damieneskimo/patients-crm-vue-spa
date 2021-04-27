@@ -99,9 +99,8 @@
     },
     beforeRouteEnter (to, from, next) {
       next(vm => {
-        console.log(vm.isLoggedin)
         if (! vm.isLoggedin) {
-          vm.$router.push('login')
+          vm.$router.push('/login')
         }
       })
     },
@@ -109,8 +108,6 @@
       if (this.isLoggedin) {
         apiClient.get('/api/patients')
           .then(response => {
-            console.log('here');
-            console.log(response);
               this.patients = response.data.data;
               this.isLoading = false;
           })

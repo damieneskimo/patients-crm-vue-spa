@@ -55,27 +55,34 @@
                 isLoading: true,
             };
         },
-        components: {Modal, Timeline, Loader},
-        beforeMount() {
-            apiClient.get('/sanctum/csrf-cookie')
-                .then(() => {
-                    apiClient.get('/api/patients/' + this.$route.params.id + '/notes')
-                        .then(response => {
-                            if (response.status == 200) {
-                                this.notes = response.data.data;
-                                this.patientName = response.data.meta.patient_name;
-                                this.isLoading = false;
-                            }
-                        }).catch(error => {
-                            console.error(error);
-                            // if there is error retrieving patient, then it's not authenticated
-                            if (error.response.status === 401) {
-                                this.$router.push('/')
-                            }
-                        });
-                });
+        components: { Modal, Timeline, Loader },
+        beforeRouteEnter (to, from, next) {
+            next(vm => {
+                if (! vm.$attrs.isLoggedin) {
+                    vm.$router.push('/login')
+                } else {
+                    vm.fetchNotes('/api/patients/' + to.params.id + '/notes', (data) => {
+                        vm.notes = data.data;
+                        vm.patientName = data.meta.patient_name;
+                        vm.isLoading = false;
+                    })
+                }
+            })
         },
         methods: {
+            fetchNotes(apiUrl, callback) {
+                apiClient.get('/sanctum/csrf-cookie')
+                    .then(() => {
+                        apiClient.get(apiUrl)
+                            .then(response => {
+                                if (response.status == 200) {
+                                    callback(response.data)
+                                }
+                            }).catch(error => {
+                                console.error(error);
+                            });
+                    });
+            },
             addNote() {
                 apiClient.get('/sanctum/csrf-cookie')
                     .then(() => {
