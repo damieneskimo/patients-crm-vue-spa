@@ -3,7 +3,6 @@ import App from './App.vue'
 import VueRouter from 'vue-router'
 
 import Notes from './components/Notes'
-import Home from './components/Home'
 import PatientsList from './components/PatientsList'
 import LoginForm from './components/LoginForm'
 

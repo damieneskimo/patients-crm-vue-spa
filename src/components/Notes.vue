@@ -3,7 +3,7 @@
         <h1 class="text-2xl text-left">
             Notes for 
             <router-link 
-                :to="{ name: 'home' }"
+                to="/patients"
                 class="text-green-500">
                 {{ patientName }} 
             </router-link>
