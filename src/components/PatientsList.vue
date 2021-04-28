@@ -7,22 +7,25 @@
           class="border-2 border-green-500 rounded w-1/4 py-2 px-4">
     </div>
 
-    <table v-if="! isLoading" class="mt-3 mx-auto w-full table-auto">
-      <thead>
-        <tr class="border-b border-green-500 pb-3">
-          <th class="text-left py-3 text-lg">Name</th>
-          <th class="text-left text-lg">Gender</th>
-          <th class="text-left text-lg">Mobile</th>
-          <th class="text-left text-lg">Email</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody class="text-left">
-        <Patient v-for="patient in filteredPatients" :key="patient.id" :data="patient" />
-      </tbody>
+    <div v-if="! isLoading">
+      <table class="mt-3 mx-auto w-full table-auto">
+        <thead>
+          <tr class="border-b border-green-500 pb-3">
+            <th class="text-left py-3 text-lg">Name</th>
+            <th class="text-left text-lg">Gender</th>
+            <th class="text-left text-lg">Mobile</th>
+            <th class="text-left text-lg">Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="text-left">
+          <Patient v-for="patient in filteredPatients" :key="patient.id" :data="patient" />
+        </tbody>
+      </table>
 
-      <!-- <pagination v-model="page" :records="15"  @paginate="myCallback"/> -->
-    </table>
+      <pagination :total-pages="totalPages" :total="total" :per-page="perPage" :current-page="currentPage"
+      :has-more-pages="hasMorePages" @pagechanged="pageChangeHandler" class="text-2xl my-5" />
+    </div>
     <loader v-else></loader>
 
     <!-- Add New Patient Modal -->
@@ -79,12 +82,12 @@
   import { apiClient } from '@/api.js'
   import Modal from './Modal';
   import Loader from './Loader';
-  // import Pagination from 'vue-pagination-2';
+  import Pagination from './Pagination';
 
   export default {
     name: 'PatientsList',
     components: {
-      Patient, Modal, Loader
+      Patient, Modal, Loader, Pagination
     },
     props: ['isLoggedin'],
     data: function () {
@@ -94,7 +97,11 @@
         patient: {},
         showModal: false,
         isLoading: true,
-        page: 1,
+        totalPages: 1,
+        total: 0,
+        perPage: 0,
+        currentPage: 1,
+        hasMorePages: true
       }
     },
     beforeRouteEnter (to, from, next) {
@@ -106,17 +113,16 @@
     },
     mounted() {
       if (this.isLoggedin) {
-        apiClient.get('/api/patients')
-          .then(response => {
-              this.patients = response.data.data;
-              this.isLoading = false;
+          const queryString = window.location.search;
+          const url = new URL(window.location);
+          const page = parseInt(url.searchParams.get('page'));
+          isNaN(page)? this.currentPage = 1 : this.currentPage = page;
+
+          this.getPatients(queryString, (data) => {
+            this.total = data.meta.total;
+            this.perPage = data.meta.per_page;
+            this.totalPages = data.meta.last_page;
           })
-          .catch((error) => {
-            if (error.response.status === 401) {
-              // set logged in to false
-            }
-            console.log(error.response);
-          });
       }
     },
     computed: {
@@ -128,6 +134,19 @@
       }
     },
     methods: {
+      getPatients (queryString = '', callback = false) {
+        apiClient.get('/api/patients' + queryString)
+            .then(response => {
+              if (response.status === 200) {
+                this.patients = response.data.data;
+                if (callback !== false) {
+                  callback(response.data)
+                }
+                this.isLoading = false;
+              }
+            })
+            .catch(error => console.error(error));
+      },
       addNewPatient() {
         apiClient.get('/sanctum/csrf-cookie')
           .then(() => {
@@ -140,6 +159,15 @@
                   console.error(error);
               });
           });
+      },
+      pageChangeHandler(pageNum) {
+        this.currentPage = pageNum;
+        const url = new URL(window.location);
+
+        this.getPatients('?page=' + pageNum, (res) => {
+          url.searchParams.set('page', pageNum);
+          window.history.pushState({}, '', url);
+        })
       }
     }
   }
