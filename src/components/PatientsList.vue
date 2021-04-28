@@ -1,10 +1,14 @@
 <template>
   <div>
     <div class="text-left mt-5">
-      <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mr-3">Add New Patient</button>
+      <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg">Add New Patient</button>
+    </div>
+    <div class="mt-3">
       <input v-model="keywords"
-          placeholder="Search by name"
+          @input="filterPatients"
+          placeholder="Search by name or email"
           class="border-2 border-green-500 rounded w-1/4 py-2 px-4">
+      <button @click="resetFilters" class="py-2 px-4 rounded bg-green-200 text-lg ml-3">Reset Filters</button>
     </div>
 
     <div v-if="! isLoading">
@@ -19,7 +23,7 @@
           </tr>
         </thead>
         <tbody class="text-left">
-          <Patient v-for="patient in filteredPatients" :key="patient.id" :data="patient" />
+          <Patient v-for="patient in patients" :key="patient.id" :data="patient" />
         </tbody>
       </table>
 
@@ -83,6 +87,7 @@
   import Modal from './Modal';
   import Loader from './Loader';
   import Pagination from './Pagination';
+  import { debounce } from "debounce";
 
   export default {
     name: 'PatientsList',
@@ -117,20 +122,13 @@
           const url = new URL(window.location);
           const page = parseInt(url.searchParams.get('page'));
           isNaN(page)? this.currentPage = 1 : this.currentPage = page;
+          this.keywords = url.searchParams.get('keywords');
 
           this.getPatients(queryString, (data) => {
             this.total = data.meta.total;
             this.perPage = data.meta.per_page;
             this.totalPages = data.meta.last_page;
           })
-      }
-    },
-    computed: {
-      filteredPatients() {
-        return this.patients.filter(patient => {
-          let haystack = patient.name.toLowerCase();
-          return haystack.includes(this.keywords.toLowerCase())
-        })
       }
     },
     methods: {
@@ -147,6 +145,23 @@
             })
             .catch(error => console.error(error));
       },
+      filterPatients: debounce(function (e) {
+        this.keywords = e.target.value;
+        // clear page query string
+        const url = new URL(window.location);
+        url.searchParams.delete('page')
+
+        this.getPatients('?keywords=' + this.keywords, (data) => {
+          this.currentPage = 1;
+          this.total = data.meta.total;
+          this.perPage = data.meta.per_page;
+          this.totalPages = data.meta.last_page;
+
+          // append keywords to query string
+          url.searchParams.set('keywords', this.keywords);
+          window.history.pushState({}, '', url);
+        })
+      }, 500),
       addNewPatient() {
         apiClient.get('/sanctum/csrf-cookie')
           .then(() => {
@@ -160,11 +175,21 @@
               });
           });
       },
+      resetFilters() {
+        this.keywords = '';
+        window.history.pushState({}, '', window.location.href.split('?')[0]);
+
+        this.getPatients('', (data) => {
+          this.total = data.meta.total;
+          this.perPage = data.meta.per_page;
+          this.totalPages = data.meta.last_page;
+        })
+      },
       pageChangeHandler(pageNum) {
         this.currentPage = pageNum;
         const url = new URL(window.location);
 
-        this.getPatients('?page=' + pageNum, (res) => {
+        this.getPatients('?page=' + pageNum, () => {
           url.searchParams.set('page', pageNum);
           window.history.pushState({}, '', url);
         })
