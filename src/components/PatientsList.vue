@@ -169,6 +169,7 @@
                 if (response.status == 201) {
                   this.patients.unshift(response.data);
                   this.showModal = false;
+                  this.patient = {};
                 }
               }).catch(error => {
                   console.error(error);
