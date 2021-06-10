@@ -2,11 +2,17 @@ import Vue from 'vue'
 import App from './App.vue'
 import VueRouter from 'vue-router'
 
-import Notes from './components/Notes'
-import PatientsList from './components/PatientsList'
-import LoginForm from './components/LoginForm'
+import Notes from './pages/Notes'
+import PatientsList from './pages/PatientsList'
+import Login from './pages/Login'
 
 import './assets/index.css';
+
+if (process.env.NODE_ENV === 'development') {
+  const { worker } = require('./mocks/browser')
+  worker.start()
+}
+
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -14,7 +20,7 @@ Vue.use(VueRouter)
 const routes = [
   { path: '/patients', name: 'patients', component: PatientsList, props: true },
   { path: '/patients/:id/notes', name: 'notes', component: Notes },
-  { path: '/login', name: 'login', component: LoginForm },
+  { path: '/login', name: 'login', component: Login },
   { path: '/', redirect: '/patients' },
 ]
 
