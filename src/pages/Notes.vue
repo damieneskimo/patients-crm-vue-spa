@@ -40,9 +40,9 @@
 
 <script>
     import { apiClient } from '@/api.js'
-    import Modal from './Modal'
-    import Timeline from './Timeline'
-    import Loader from './Loader'
+    import Modal from '@/components/Modal'
+    import Timeline from '@/components/Timeline'
+    import Loader from '@/components/Loader'
 
     export default {
         name: 'Notes',
@@ -63,7 +63,6 @@
                 } else {
                     vm.fetchNotes('/api/patients/' + to.params.id + '/notes', (data) => {
                         vm.notes = data.data;
-                        vm.patientName = data.meta.patient_name;
                         vm.isLoading = false;
                     })
                 }
@@ -71,32 +70,26 @@
         },
         methods: {
             fetchNotes(apiUrl, callback) {
-                apiClient.get('/sanctum/csrf-cookie')
-                    .then(() => {
-                        apiClient.get(apiUrl)
-                            .then(response => {
-                                if (response.status == 200) {
-                                    callback(response.data)
-                                }
-                            }).catch(error => {
-                                console.error(error);
-                            });
+                apiClient.get(apiUrl)
+                    .then(response => {
+                        if (response.status == 200) {
+                            callback(response.data)
+                        }
+                    }).catch(error => {
+                        console.error(error);
                     });
             },
             addNote() {
-                apiClient.get('/sanctum/csrf-cookie')
-                    .then(() => {
-                        apiClient.post('/api/patients/' + this.patient.id + '/notes', {
-                            content: this.content,
-                        }).then(response => {
-                            if (response.status == 201) {
-                                this.patient.notes.unshift(response.data);
-                                this.showModal = false;
-                            }
-                        }).catch(error => {
-                            console.error(error);
-                        });
-                    });
+                apiClient.post('/api/patients/' + this.patient.id + '/notes', {
+                    content: this.content,
+                }).then(response => {
+                    if (response.status == 201) {
+                        this.patient.notes.unshift(response.data);
+                        this.showModal = false;
+                    }
+                }).catch(error => {
+                    console.error(error);
+                });
             }
         }
     }

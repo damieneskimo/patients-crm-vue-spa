@@ -82,11 +82,11 @@
 </template>
 
 <script>
-  import Patient from './Patient'
   import { apiClient } from '@/api.js'
-  import Modal from './Modal';
-  import Loader from './Loader';
-  import Pagination from './Pagination';
+  import Patient from '@/components/Patient'
+  import Modal from '@/components/Modal';
+  import Loader from '@/components/Loader';
+  import Pagination from '@/components/Pagination';
   import { debounce } from "debounce";
 
   export default {
@@ -163,18 +163,15 @@
         })
       }, 500),
       addNewPatient() {
-        apiClient.get('/sanctum/csrf-cookie')
-          .then(() => {
-              apiClient.post('/api/patients/', this.patient).then(response => {
-                if (response.status == 201) {
-                  this.patients.unshift(response.data);
-                  this.showModal = false;
-                  this.patient = {};
-                }
-              }).catch(error => {
-                  console.error(error);
-              });
-          });
+        apiClient.post('/api/patients/', this.patient).then(response => {
+          if (response.status == 201) {
+            this.patients.unshift(response.data);
+            this.showModal = false;
+            this.patient = {};
+          }
+        }).catch(error => {
+            console.error(error);
+        });
       },
       resetFilters() {
         this.keywords = '';

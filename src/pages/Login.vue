@@ -36,7 +36,7 @@
 import { apiClient } from '@/api.js'
 
 export default {
-    name: 'LoginForm',
+    name: 'Login',
     data: function () {
         return {
             email: '',
