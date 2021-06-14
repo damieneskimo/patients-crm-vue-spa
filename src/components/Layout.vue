@@ -1,6 +1,6 @@
 <template>
     <div class="px-40 py-5">
-      <div v-if="isLoggedin" class="flex justify-between">
+      <div v-if="user" class="flex justify-between">
         <router-link
           to="/patients"
           active-class="text-green-500"
@@ -8,7 +8,10 @@
         >
           Patients
         </router-link>
-        <button @click="logout" class="py-2 px-4 rounded bg-green-500 text-lg">Logout</button>   
+        <div>
+          <span>Hi, {{ user.name }}</span>
+          <button @click="logout" class="py-2 px-4 text-lg">Logout</button>
+        </div>
       </div>
 
       <slot></slot>
@@ -16,27 +19,32 @@
 </template>
 
 <script>
-import { apiClient } from '@/api.js';
+import { mapState } from 'vuex';
 
 export default {
     name: 'Layout',
-    props: ['isLoggedin'],
+    computed: {
+      ...mapState('auth', [
+        'user'
+      ]),
+    },
+    created () {
+      this.$store.dispatch('auth/getUser')
+        .then(() => {
+        this.$router.push('/patients')
+        }).catch(error => {
+          if (error.response.status === 401) {
+            this.logout()
+          }
+        });
+    },
     methods: {
-        logout() {
-            apiClient.post('/logout').then(response => {
-                if (response.status == 204) {
-                    sessionStorage.setItem('loggedIn', 'false');
-                    this.$emit('listenLogoutEvent', false)
-                    this.$router.push('/login')
-                }
-            }).catch(error => {
-                console.error(error);
-            });
-        },
+      logout() {
+        this.$store.dispatch('auth/logout')
+          .then(() => {
+            this.$router.push('/login')
+          })
+      }
     }
 }
 </script>
-
-<style>
-
-</style>
