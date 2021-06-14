@@ -1,5 +1,6 @@
 <template>
   <tr v-if="Object.keys(patient).length != 0">
+    <td><img :src="patient.profile_photo" alt="profile" class="h-16" /></td>
     <td class="py-3">{{ patient.name }}</td>
     <td>{{ patient.gender }}</td>
     <td>
@@ -11,7 +12,7 @@
     <td class="text-center">
       <a @click="showModal = true" class="py-1 px-6 rounded bg-green-400 text-lg mr-3 cursor-pointer">Edit</a>
       <router-link 
-        :to="{ name: 'notes', params: { id: patient.id } }"
+        :to="{ name: 'notes', params: { id: patient.id, name: patient.name } }"
         class="py-1 px-6 rounded bg-green-400 text-lg">
           Notes
       </router-link>
@@ -55,7 +56,6 @@
 
 <script>
 import Modal from './Modal'
-import { apiClient } from '@/api.js'
 
 export default {
   name: 'Patient',
@@ -71,29 +71,16 @@ export default {
   props: {
     data: Object,
   },
-  mounted() {
-    
-  },
   methods: {
     editPatient() {
-      apiClient.get('/sanctum/csrf-cookie')
-        .then(() => {
-            apiClient.put('/api/patients/' + this.patient.id, {
-                name: this.patient.name,
-                gender: this.patient.gender,
-                mobile: this.patient.mobile
-            }).then(response => {
-              if (response.status == 200) {
-                this.patient = response.data;
-                this.showModal = false;
-              }
-            }).catch(error => {
-                console.error(error);
-            });
-        });
-    },
-    showNotes() {
-
+      this.$store.dispatch('patients/editPatient', {
+        patientId: this.patient.id,
+        data: {
+          name: this.patient.name,
+          gender: this.patient.gender,
+          mobile: this.patient.mobile
+        }
+      })
     }
   }
 }
