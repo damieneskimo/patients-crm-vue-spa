@@ -5,7 +5,7 @@
             <router-link 
                 to="/patients"
                 class="text-green-500">
-                {{ patientName }} 
+                {{ name }} 
             </router-link>
         </h1>
         <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mt-3 float-left">Add New Note</button>
@@ -16,7 +16,7 @@
         </div>
 
         <modal v-if="showModal" @close="showModal = false" class="text-left">
-            <h3 slot="header">Add New Note for {{ patientName }}</h3>
+            <h3 slot="header">Add New Note for {{ name }}</h3>
             <form slot="body">
                 <div class="my-5">
                     <textarea 
@@ -39,57 +39,47 @@
 </template>
 
 <script>
-    import { apiClient } from '@/api.js'
     import Modal from '@/components/Modal'
     import Timeline from '@/components/Timeline'
     import Loader from '@/components/Loader'
+    import { mapState } from 'vuex'
 
     export default {
         name: 'Notes',
+        components: { Modal, Timeline, Loader },
+        props: ['name'],
         data: function () {
             return {
-                patientName: '',
-                notes: [],
                 showModal: false,
                 content: '',
                 isLoading: true,
             };
         },
-        components: { Modal, Timeline, Loader },
-        beforeRouteEnter (to, from, next) {
-            next(vm => {
-                if (! vm.$attrs.isLoggedin) {
-                    vm.$router.push('/login')
-                } else {
-                    vm.fetchNotes('/api/patients/' + to.params.id + '/notes', (data) => {
-                        vm.notes = data.data;
-                        vm.isLoading = false;
-                    })
-                }
-            })
+        computed: mapState('notes', [
+            'notes',
+        ]),
+        created() {
+            this.$store.dispatch('notes/getAllNotes', this.$attrs.id)
+                .then(() => {
+                    this.isLoading = false
+                });
         },
         methods: {
-            fetchNotes(apiUrl, callback) {
-                apiClient.get(apiUrl)
-                    .then(response => {
-                        if (response.status == 200) {
-                            callback(response.data)
-                        }
-                    }).catch(error => {
-                        console.error(error);
-                    });
-            },
             addNote() {
-                apiClient.post('/api/patients/' + this.patient.id + '/notes', {
-                    content: this.content,
-                }).then(response => {
-                    if (response.status == 201) {
-                        this.patient.notes.unshift(response.data);
-                        this.showModal = false;
+                this.isLoading = true
+
+                this.$store.dispatch(
+                    'notes/addNote', 
+                    {
+                        patientId: this.$attrs.id, 
+                        data: {
+                            content: this.content
+                        }
                     }
-                }).catch(error => {
-                    console.error(error);
-                });
+                ).then(() => {
+                    this.showModal = false
+                    this.isLoading = false
+                })
             }
         }
     }

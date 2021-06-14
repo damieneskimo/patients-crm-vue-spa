@@ -4,17 +4,16 @@
       <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg">Add New Patient</button>
     </div>
     <div class="mt-3">
-      <input v-model="keywords"
-          @input="filterPatients"
-          placeholder="Search by name or email"
-          class="border-2 border-green-500 rounded w-1/4 py-2 px-4">
-      <button @click="resetFilters" class="py-2 px-4 rounded bg-green-200 text-lg ml-3">Reset Filters</button>
+      <input v-model="keywords" placeholder="Search by name or email"
+        class="border-2 border-green-500 rounded w-1/4 py-2 px-4">
+      <button @click="handleKeywordsChange" class="py-2 px-4 rounded bg-green-200 text-lg ml-3">Search</button>
     </div>
 
     <div v-if="! isLoading">
       <table class="mt-3 mx-auto w-full table-auto">
         <thead>
           <tr class="border-b border-green-500 pb-3">
+            <th class="py-3"></th>
             <th class="text-left py-3 text-lg">Name</th>
             <th class="text-left text-lg">Gender</th>
             <th class="text-left text-lg">Mobile</th>
@@ -23,11 +22,11 @@
           </tr>
         </thead>
         <tbody class="text-left">
-          <Patient v-for="patient in patients" :key="patient.id" :data="patient" />
+          <patient v-for="patient in patients" :key="patient.id" :data="patient" />
         </tbody>
       </table>
 
-      <pagination :total-pages="totalPages" :total="total" :per-page="perPage" :current-page="currentPage"
+      <pagination :total-pages="meta.totalPages" :total="meta.total" :per-page="meta.perPage" :current-page="meta.currentPage"
       :has-more-pages="hasMorePages" @pagechanged="pageChangeHandler" class="text-2xl my-5" />
     </div>
     <loader v-else></loader>
@@ -74,7 +73,7 @@
         </form>
 
         <div slot="footer">
-          <button @click="addNewPatient" class="py-3 px-5 rounded bg-green-500 text-lg right">Submit</button>
+          <button @click="addPatient" class="py-3 px-5 rounded bg-green-500 text-lg right">Submit</button>
           <button @click="showModal = false" class="py-3 px-5 rounded bg-gray-200 ml-3 text-lg right">Cancel</button>
         </div>
     </modal>
@@ -82,115 +81,69 @@
 </template>
 
 <script>
-  import { apiClient } from '@/api.js'
   import Patient from '@/components/Patient'
   import Modal from '@/components/Modal';
   import Loader from '@/components/Loader';
   import Pagination from '@/components/Pagination';
-  import { debounce } from "debounce";
+  import { mapState } from 'vuex';
 
   export default {
     name: 'PatientsList',
     components: {
       Patient, Modal, Loader, Pagination
     },
-    props: ['isLoggedin'],
     data: function () {
       return {
-        patients: [],
-        keywords: '',
         patient: {},
         showModal: false,
         isLoading: true,
-        totalPages: 1,
-        total: 0,
-        perPage: 0,
-        currentPage: 1,
-        hasMorePages: true
+        hasMorePages: true,
+        queryString: window.location.search,
+        keywords: ''
       }
     },
-    beforeRouteEnter (to, from, next) {
-      next(vm => {
-        if (! vm.isLoggedin) {
-          vm.$router.push('/login')
-        }
-      })
+    computed: {
+      ...mapState('patients', [
+        'patients',
+        'meta',
+      ]),
     },
     mounted() {
-      if (this.isLoggedin) {
-          const queryString = window.location.search;
-          const url = new URL(window.location);
-          const page = parseInt(url.searchParams.get('page'));
-          isNaN(page)? this.currentPage = 1 : this.currentPage = page;
-          this.keywords = url.searchParams.get('keywords');
-
-          this.getPatients(queryString, (data) => {
-            this.total = data.meta.total;
-            this.perPage = data.meta.per_page;
-            this.totalPages = data.meta.last_page;
-          })
-      }
+      this.queryString = window.location.search;
+      this.$store.dispatch('patients/getAllPatients', this.queryString)
+        .finally(() => {
+          this.isLoading = false
+        })
     },
     methods: {
-      getPatients (queryString = '', callback = false) {
-        apiClient.get('/api/patients' + queryString)
-            .then(response => {
-              if (response.status === 200) {
-                this.patients = response.data.data;
-                if (callback !== false) {
-                  callback(response.data)
-                }
-                this.isLoading = false;
-              }
-            })
-            .catch(error => console.error(error));
+      handleKeywordsChange() {
+        let searchParams = new URLSearchParams(this.queryString);
+        if (searchParams.has('page')) {
+          searchParams.delete('page')
+        }
+        searchParams.set('keywords', this.keywords);
+        this.queryString = '?' + searchParams.toString();
+
+        this.$store.dispatch('patients/getAllPatients', this.queryString)
+          .then(() => {
+            window.history.pushState({}, '', window.location.href.split('?')[0] + this.queryString);
+          })
       },
-      filterPatients: debounce(function (e) {
-        this.keywords = e.target.value;
-        // clear page query string
-        const url = new URL(window.location);
-        url.searchParams.delete('page')
-
-        this.getPatients('?keywords=' + this.keywords, (data) => {
-          this.currentPage = 1;
-          this.total = data.meta.total;
-          this.perPage = data.meta.per_page;
-          this.totalPages = data.meta.last_page;
-
-          // append keywords to query string
-          url.searchParams.set('keywords', this.keywords);
-          window.history.pushState({}, '', url);
-        })
-      }, 500),
-      addNewPatient() {
-        apiClient.post('/api/patients/', this.patient).then(response => {
-          if (response.status == 201) {
-            this.patients.unshift(response.data);
-            this.showModal = false;
-            this.patient = {};
-          }
-        }).catch(error => {
-            console.error(error);
-        });
-      },
-      resetFilters() {
-        this.keywords = '';
-        window.history.pushState({}, '', window.location.href.split('?')[0]);
-
-        this.getPatients('', (data) => {
-          this.total = data.meta.total;
-          this.perPage = data.meta.per_page;
-          this.totalPages = data.meta.last_page;
+      addPatient() {
+        this.$store.dispatch('patients/addPatient', {
+          data: this.patient
         })
       },
       pageChangeHandler(pageNum) {
         this.currentPage = pageNum;
-        const url = new URL(window.location);
+        let searchParams = new URLSearchParams(this.queryString);
+        searchParams.set('page', pageNum)
+        this.queryString = '?' + searchParams.toString();
 
-        this.getPatients('?page=' + pageNum, () => {
-          url.searchParams.set('page', pageNum);
-          window.history.pushState({}, '', url);
-        })
+        this.$store.dispatch('patients/getAllPatients', this.queryString)
+          .then(() => {
+            window.history.pushState({}, '', window.location.href.split('?')[0] + this.queryString);
+          })
       }
     }
   }
