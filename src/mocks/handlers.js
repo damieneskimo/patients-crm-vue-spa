@@ -20,6 +20,7 @@ for (let index = 1; index <= numOfPatients; index++) {
     for (let i = 1; i <= 5; i++) {
         fakeNotes[index].push({
             id: i,
+            user_id: index,
             content: Faker.lorem.sentences(),
             created_at: new Date(Faker.date.past()).toDateString()
         })
@@ -35,9 +36,6 @@ export const handlers = [
         )
     }),
     rest.post('/login', (req, res, ctx) => {
-        // Persist user's authentication in the session
-        sessionStorage.setItem('loggedIn', 'true')
-
         return res(
             // Respond with a 204 status code
             ctx.status(204),
@@ -47,12 +45,18 @@ export const handlers = [
         // clear the session
         sessionStorage.clear()
         document.cookie = 'XSRF-TOKEN=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
         return res(
             // Respond with a 204 status code
             ctx.status(204),
         )
     }),
     rest.get('/api/me', (req, res, ctx) => {
+        if (! document.cookie.split(';').some((item) => item.includes('XSRF-TOKEN=abc-123'))) {
+            return res(
+                ctx.status(401)
+            )
+        }
         return res(
             ctx.status(200),
             ctx.json({
