@@ -25,7 +25,7 @@
 
             <p v-if="authError" class="text-red-400 p-3">Credentials not recognised. Please try again.</p>
             <p v-if="forbiddenError" class="text-red-400 p-3">Sorry, you don't have the permission to access.</p> 
-
+            <p class="mb-5">For mock data, you can use any email and password combination</p>
             <button v-on:click="handleSubmit" class="py-4 px-8 rounded bg-green-500 text-lg">Login</button>  
         </form>
     </div>
