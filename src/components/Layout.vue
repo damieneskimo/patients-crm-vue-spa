@@ -28,11 +28,9 @@ export default {
         'user'
       ]),
     },
-    created () {
+    mounted () {
       this.$store.dispatch('auth/getUser')
-        .then(() => {
-        this.$router.push('/patients')
-        }).catch(error => {
+        .catch(error => {
           if (error.response.status === 401) {
             this.logout()
           }
