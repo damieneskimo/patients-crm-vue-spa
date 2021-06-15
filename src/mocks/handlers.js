@@ -114,6 +114,11 @@ export const handlers = [
             })
         )
     }),
+    rest.get('/api/patients/:id', (req, res, ctx) => {
+        return res(
+            ctx.json(fakePatients[req.params.id])
+        )
+    }),
     rest.put('/api/patients/:id', (req, res, ctx) => {
         const {email, gender, mobile, name} = req.body;
         const { id } = req.params;
@@ -132,9 +137,8 @@ export const handlers = [
         const { patientId } = req.params
         return res(
             ctx.status(200),
-            ctx.json({
-                "data": fakeNotes[patientId]
-            })
+            ctx.json(fakeNotes[patientId]
+            )
         )
     }),
     rest.post('/api/patients/:patientId/notes', (req, res, ctx) => {
@@ -145,6 +149,7 @@ export const handlers = [
             ctx.status(201),
             ctx.json({
                 id: fakeNotes[patientId].length + 1,
+                user_id: patientId,
                 content,
                 created_at: Date.toString()
             })
