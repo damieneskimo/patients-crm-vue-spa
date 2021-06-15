@@ -52,17 +52,18 @@
             return {
                 showModal: false,
                 content: '',
-                isLoading: true,
             };
         },
-        computed: mapState('notes', [
-            'notes',
-        ]),
+        computed: {
+            ...mapState('notes', [
+                'notes',
+            ]),
+            ...mapState('general', [
+                'isLoading',
+            ]),
+        },
         created() {
             this.$store.dispatch('notes/getAllNotes', this.$attrs.id)
-                .then(() => {
-                    this.isLoading = false
-                });
         },
         methods: {
             addNote() {

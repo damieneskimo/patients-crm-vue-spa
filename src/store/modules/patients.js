@@ -16,7 +16,9 @@ const getters = {
 }
 
 const actions = {
-    getAllPatients({ commit }, queryString) {
+    getAllPatients({ commit, dispatch }, queryString) {
+      dispatch('general/setIsLoading', {}, {root:true})
+
       return new Promise((resolve, reject) => {
         apiClient.get('/api/patients' + queryString)
           .then(response => {
@@ -28,27 +30,38 @@ const actions = {
           }).catch(error => {
             console.error(error)
             reject(error)
+          }).finally(() => {
+            dispatch('general/setIsLoaded', {}, {root:true})
           });
         })
     },
-    addPatient({ commit }, {data}) {
-      apiClient.post('/api/patients/', data)
-        .then(response => {
-          if (response.status == 201) {
-            commit('createNewPatient', response.data)
-          }
-        }).catch(error => {
-            console.error(error);
-        });
+    addPatient({ commit }, { data }) {
+      return new Promise((resolve, reject) => {
+        apiClient.post('/api/patients/', data)
+          .then(response => {
+            if (response.status == 201) {
+              commit('createNewPatient', response.data)
+              commit('setPatient', {})
+              resolve()
+            }
+          }).catch(error => {
+              console.error(error);
+              reject(error)
+          });
+        })
     },
-    editPatient({ commit }, {patientId, data}) {
-      apiClient.put('/api/patients/' + patientId, data)
-        .then(response => {
-          if (response.status == 200) {
-            commit('setPatient', response.data);
-          }
-        }).catch(error => {
-            console.error(error);
+    editPatient({ commit }, { patientId, data }) {
+      return new Promise((resolve, reject) => {
+        apiClient.put('/api/patients/' + patientId, data)
+          .then(response => {
+            if (response.status == 200) {
+              commit('setPatient', response.data);
+              resolve()
+            }
+          }).catch(error => {
+              console.error(error);
+              reject(error)
+          })
         })
     }
 }

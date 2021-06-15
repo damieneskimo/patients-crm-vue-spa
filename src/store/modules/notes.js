@@ -9,7 +9,9 @@ const getters = {
 }
 
 const actions = {
-    getAllNotes({ commit }, patientId) {
+    getAllNotes({ commit, dispatch }, patientId) {
+        dispatch('general/setIsLoading', {}, {root:true})
+
         return new Promise((resolve, reject) => {
             apiClient.get('/api/patients/' + patientId + '/notes')
                 .then(response => {
@@ -20,10 +22,14 @@ const actions = {
                 }).catch(error => {
                     console.error(error);
                     reject(error)
+                }).finally(() => {
+                    dispatch('general/setIsLoaded', {}, {root:true})
                 });
             })
     },
-    addNote({ commit }, { patientId, data }) {
+    addNote({ commit, dispatch }, { patientId, data }) {
+        dispatch('general/setIsLoading', {}, {root:true})
+
         return new Promise((resolve, reject) => {
             apiClient.post('/api/patients/' + patientId + '/notes', data)
                 .then(response => {
@@ -34,6 +40,8 @@ const actions = {
                 }).catch(error => {
                     console.error(error);
                     reject(error)
+                }).finally(() => {
+                    dispatch('general/setIsLoaded', {}, {root:true})
                 });
             })
     }

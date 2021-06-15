@@ -80,6 +80,8 @@ export default {
           gender: this.patient.gender,
           mobile: this.patient.mobile
         }
+      }).then(() => {
+        this.showModal = false
       })
     }
   }

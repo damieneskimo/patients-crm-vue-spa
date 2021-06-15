@@ -10,9 +10,9 @@ const getters = {
 
 const actions = {
     login({ dispatch }, { data }) {
-        apiClient.get('/sanctum/csrf-cookie')
-            .then(() => {
-                return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            apiClient.get('/sanctum/csrf-cookie')
+                .then(() => {    
                     apiClient.post('/login', data)
                     .then(response => {
                         if (response.status === 204) {
