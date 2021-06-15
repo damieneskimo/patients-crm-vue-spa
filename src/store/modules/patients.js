@@ -74,7 +74,7 @@ const actions = {
     },
     getPatient({ commit }, patientId) {
       return new Promise((resolve, reject) => {
-        apiClient.get('api/patients/' + patientId)
+        apiClient.get('/api/patients/' + patientId)
           .then((response) => {
             commit('setPatient', response.data)
             resolve()
