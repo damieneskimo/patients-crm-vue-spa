@@ -77,13 +77,22 @@ export const handlers = [
             })
         }
 
+        const gender = req.url.searchParams.get('gender');
+        if (gender !== null) {
+            data = data.filter(item => {
+                return item.gender == gender
+            })
+        }
+
         return res(
             ctx.status(200),
             ctx.json({
                 "data": data,
                 "meta": {
-                    currentPage: page? parseInt(page) : 1,
-                    last_page: Math.ceil(numOfPatients/15)
+                    current_page: page? parseInt(page) : 1,
+                    last_page: Math.ceil(numOfPatients/15),
+                    per_page: 15,
+                    total: fakePatients.length
                 }
             })
         )
