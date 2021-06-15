@@ -2,7 +2,7 @@
 
 This project is a Vue Single Page Application (SPA) for managing patients data. SPA will retrieve the data from API in the project: https://github.com/damieneskimo/patients-crm. <br />
 
-It uses Axios as the http client, Vue Router for the routing and Tailwind CSS for basic styling. <br />
+It uses Axios as the http client, Vue Router for the routing, Vuex for state management and Tailwind CSS for basic styling. <br />
 
 For a quick overview and easier development without being tied up with a back end, this project uses [Mock Service Worker] (https://github.com/mswjs/msw) to mock rest api and [faker.js] (https://github.com/Marak/faker.js) to generate fake data.
 
