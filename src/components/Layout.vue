@@ -30,6 +30,11 @@ export default {
     },
     mounted () {
       this.$store.dispatch('auth/getUser')
+        .then(() => {
+          if (this.$router.currentRoute.name == 'login') {
+            this.$router.push('/')
+          }
+        })
         .catch(error => {
           if (error.response.status === 401) {
             this.logout()
