@@ -63,6 +63,18 @@ const actions = {
               reject(error)
           })
         })
+    },
+    getPatient({ commit }, patientId) {
+      return new Promise((resolve, reject) => {
+        apiClient.get('api/patients/' + patientId)
+          .then((response) => {
+            commit('setPatient', response.data)
+            resolve()
+          }).catch(error => {
+            console.error(error);
+            reject(error)
+          })
+      })
     }
 }
 

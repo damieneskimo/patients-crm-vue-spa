@@ -5,7 +5,7 @@
             <router-link 
                 to="/patients"
                 class="text-green-500">
-                {{ name }} 
+                {{ patientName }} 
             </router-link>
         </h1>
         <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg mt-3 float-left">Add New Note</button>
@@ -16,7 +16,7 @@
         </div>
 
         <modal v-if="showModal" @close="showModal = false" class="text-left">
-            <h3 slot="header">Add New Note for {{ name }}</h3>
+            <h3 slot="header">Add New Note for {{ patientName }}</h3>
             <form slot="body">
                 <div class="my-5">
                     <textarea 
@@ -52,11 +52,15 @@
             return {
                 showModal: false,
                 content: '',
+                patientName: this.name
             };
         },
         computed: {
             ...mapState('notes', [
                 'notes',
+            ]),
+            ...mapState('patients', [
+                'patient',
             ]),
             ...mapState('general', [
                 'isLoading',
@@ -64,6 +68,13 @@
         },
         created() {
             this.$store.dispatch('notes/getAllNotes', this.$attrs.id)
+
+            if (this.name === undefined) {
+                this.$store.dispatch('patients/getPatient', this.$attrs.id)
+                    .then(() => {
+                        this.patientName = this.patient.name
+                    })
+            }
         },
         methods: {
             addNote() {
