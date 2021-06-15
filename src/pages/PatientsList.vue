@@ -4,7 +4,7 @@
       <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg">Add New Patient</button>
     </div>
     <div class="mt-3">
-      <select v-model="filterGender" @change="filterByGender" class="border-2 rounded px-4 py-2.5 border-green-500 mr-5">
+      <select v-model="gender" @change="filterByGender" class="border-2 rounded px-4 py-2.5 border-green-500 mr-5">
         <option disabled value="">Please select a gender</option>
         <option value="male">Male</option>
         <option value="female">Female</option>
@@ -106,7 +106,7 @@
         hasMorePages: true,
         queryString: window.location.search,
         keywords: '',
-        filterGender: ''
+        gender: ''
       }
     },
     computed: {
@@ -120,7 +120,17 @@
     },
     mounted() {
       this.queryString = window.location.search;
+      let searchParams = new URLSearchParams(this.queryString)
+
       this.$store.dispatch('patients/getAllPatients', this.queryString)
+        .then(() => {
+          if (searchParams.has('keywords')) {
+            this.keywords = searchParams.get('keywords')
+          }
+          if (searchParams.has('gender')) {
+            this.gender = searchParams.get('gender')
+          }
+        })
     },
     methods: {
       handleKeywordsChange() {
@@ -156,7 +166,7 @@
       },
       filterByGender() {
         let searchParams = new URLSearchParams(this.queryString);
-        searchParams.set('gender', this.filterGender)
+        searchParams.set('gender', this.gender)
         this.queryString = '?' + searchParams.toString();
         
         this.$store.dispatch('patients/getAllPatients', this.queryString)
@@ -166,7 +176,7 @@
       },
       handleClearFilters() {
         this.queryString = ''
-        this.filterGender = ''
+        this.gender = ''
         this.keywords = ''
         this.$store.dispatch('patients/getAllPatients', this.queryString)
           .then(() => {
