@@ -4,9 +4,16 @@
       <button @click="showModal = true" class="py-2 px-4 rounded bg-green-500 text-lg">Add New Patient</button>
     </div>
     <div class="mt-3">
+      <select v-model="filterGender" @change="filterByGender" class="border-2 rounded px-4 py-2.5 border-green-500 mr-5">
+        <option disabled value="">Please select a gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="rather not say">Rather Not Say</option>
+      </select>
       <input v-model="keywords" placeholder="Search by name or email"
         class="border-2 border-green-500 rounded w-1/4 py-2 px-4">
       <button @click="handleKeywordsChange" class="py-2 px-4 rounded bg-green-200 text-lg ml-3">Search</button>
+      <button @click="handleClearFilters" class="py-2 px-4 rounded bg-green-100 text-lg ml-3">Clear</button>
     </div>
 
     <div v-if="! isLoading">
@@ -96,10 +103,10 @@
       return {
         patient: {},
         showModal: false,
-        isLoading: true,
         hasMorePages: true,
         queryString: window.location.search,
-        keywords: ''
+        keywords: '',
+        filterGender: ''
       }
     },
     computed: {
@@ -107,13 +114,13 @@
         'patients',
         'meta',
       ]),
+      ...mapState('general', [
+        'isLoading'
+      ])
     },
     mounted() {
       this.queryString = window.location.search;
       this.$store.dispatch('patients/getAllPatients', this.queryString)
-        .finally(() => {
-          this.isLoading = false
-        })
     },
     methods: {
       handleKeywordsChange() {
@@ -132,6 +139,8 @@
       addPatient() {
         this.$store.dispatch('patients/addPatient', {
           data: this.patient
+        }).then(() => {
+          this.showModal = false
         })
       },
       pageChangeHandler(pageNum) {
@@ -143,6 +152,25 @@
         this.$store.dispatch('patients/getAllPatients', this.queryString)
           .then(() => {
             window.history.pushState({}, '', window.location.href.split('?')[0] + this.queryString);
+          })
+      },
+      filterByGender() {
+        let searchParams = new URLSearchParams(this.queryString);
+        searchParams.set('gender', this.filterGender)
+        this.queryString = '?' + searchParams.toString();
+        
+        this.$store.dispatch('patients/getAllPatients', this.queryString)
+          .then(() => {
+            window.history.pushState({}, '', window.location.href.split('?')[0] + this.queryString);
+          })
+      },
+      handleClearFilters() {
+        this.queryString = ''
+        this.filterGender = ''
+        this.keywords = ''
+        this.$store.dispatch('patients/getAllPatients', this.queryString)
+          .then(() => {
+            window.history.pushState({}, '', window.location.href.split('?')[0])
           })
       }
     }
