@@ -42,6 +42,17 @@
     <modal v-if="showModal" @close="showModal = false" class="text-left">
         <h3 slot="header">Add New Patient</h3>
         <form slot="body">
+          <div className="my-5">
+                <div className="w-full pl-3">
+                  <label className="mb-3" for="profile_photo">Update profile photo</label>
+                  <input
+                    type="file"
+                    className="w-full border-2 rounded p-3 border-green-500"
+                    name="profile_photo"
+                    id="profile_photo"
+                  />
+                </div>
+          </div>
           <div class="my-5">
             <input
               class="w-full border-2 rounded p-3 border-green-500"
@@ -147,8 +158,15 @@
           })
       },
       addPatient() {
+        const formData = new FormData();
+        for (const [key, value] of Object.entries(this.patient)) {
+          formData.append(key, value);
+        }
+        const file = document.getElementById('profile_photo');
+        formData.append('profile_photo', file.files[0], file.files[0].name)
+
         this.$store.dispatch('patients/addPatient', {
-          data: this.patient
+          data: formData
         }).then(() => {
           this.showModal = false
         })

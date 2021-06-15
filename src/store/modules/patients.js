@@ -37,8 +37,12 @@ const actions = {
     },
     addPatient({ commit }, { data }) {
       return new Promise((resolve, reject) => {
-        apiClient.post('/api/patients/', data)
-          .then(response => {
+        apiClient({
+            method: 'post',
+            url: '/api/patients/',
+            headers: { 'content-type': 'multipart/form-data' },
+            data: data,
+          }).then(response => {
             if (response.status == 201) {
               commit('createNewPatient', response.data)
               commit('setPatient', {})
@@ -52,8 +56,12 @@ const actions = {
     },
     editPatient({ commit }, { patientId, data }) {
       return new Promise((resolve, reject) => {
-        apiClient.put('/api/patients/' + patientId, data)
-          .then(response => {
+        apiClient({
+          method: 'post',
+          url: '/api/patients/' + patientId,
+          headers: { 'content-type': 'multipart/form-data' },
+          data: data,
+        }).then(response => {
             if (response.status == 200) {
               commit('setPatient', response.data);
               resolve()

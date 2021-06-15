@@ -22,6 +22,18 @@
     <modal v-if="showModal" @close="showModal = false">
         <h3 slot="header">Edit {{ patient.name }}</h3>
         <form slot="body">
+          <div className="my-5 flex">
+                <img :src="patient.profile_photo" alt="profile" className="h-32" />
+                <div className="w-full pl-3">
+                  <p className="mb-3">Update profile photo</p>
+                  <input
+                    type="file"
+                    className="w-full border-2 rounded p-3 border-green-500"
+                    name="profile_photo"
+                    id="profile_photo"
+                  />
+                </div>
+          </div>
           <div class="my-5">
             <input
               class="w-full border-2 rounded p-3 border-green-500"
@@ -73,13 +85,17 @@ export default {
   },
   methods: {
     editPatient() {
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(this.patient)) {
+        formData.append(key, value);
+      }
+      formData.append('_method', 'put')
+      const file = document.getElementById('profile_photo');
+      formData.append('profile_photo', file.files[0], file.files[0].name)
+      
       this.$store.dispatch('patients/editPatient', {
         patientId: this.patient.id,
-        data: {
-          name: this.patient.name,
-          gender: this.patient.gender,
-          mobile: this.patient.mobile
-        }
+        data: formData
       }).then(() => {
         this.showModal = false
       })
