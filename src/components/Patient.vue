@@ -68,20 +68,26 @@
 
 <script>
 import Modal from './Modal'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Patient',
   components: {
     Modal
   },
+  props: {
+    data: Object,
+  },
+  computed: {
+      ...mapState('patients', {
+          currentPatient: 'patient',
+      }),
+  },
   data: function () {
     return {
       patient: Object.assign({}, this.data),
       showModal: false
     }
-  },
-  props: {
-    data: Object,
   },
   methods: {
     editPatient() {
@@ -98,6 +104,7 @@ export default {
         data: formData
       }).then(() => {
         this.showModal = false
+        this.patient = this.currentPatient
       })
     }
   }
