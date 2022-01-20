@@ -16,73 +16,49 @@ const getters = {
 }
 
 const actions = {
-    getAllPatients({ commit, dispatch }, queryString) {
+    async getAllPatients({ commit, dispatch }, queryString) {
       dispatch('general/setIsLoading', {}, {root:true})
 
-      return new Promise((resolve, reject) => {
-        apiClient.get('/api/patients' + queryString)
-          .then(response => {
-            if (response.status === 200) {
-              commit('setPatients', response.data.data);
-              commit('setMeta', response.data.meta);
-              resolve()
-            }
-          }).catch(error => {
-            console.error(error)
-            reject(error)
-          }).finally(() => {
-            dispatch('general/setIsLoaded', {}, {root:true})
-          });
-        })
+      let response = await apiClient.get('/api/patients' + queryString)
+      if (response.status === 200) {
+        commit('setPatients', response.data.data);
+        commit('setMeta', response.data.meta);
+      }
+      dispatch('general/setIsLoaded', {}, {root:true})
+      
+      return response;
     },
-    addPatient({ commit }, { data }) {
-      return new Promise((resolve, reject) => {
-        apiClient({
-            method: 'post',
-            url: '/api/patients/',
-            headers: { 'content-type': 'multipart/form-data' },
-            data: data,
-          }).then(response => {
-            if (response.status == 201) {
-              commit('createNewPatient', response.data)
-              commit('setPatient', {})
-              resolve()
-            }
-          }).catch(error => {
-              console.error(error);
-              reject(error)
-          });
-        })
+    async addPatient({ commit }, { data }) {
+      let response =  await apiClient({
+        method: 'post',
+        url: '/api/patients/',
+        headers: { 'content-type': 'multipart/form-data' },
+        data: data,
+      });
+      if (response.status == 201) {
+        commit('createNewPatient', response.data);
+        commit('setPatient', {});
+      }
+      return response;
     },
-    editPatient({ commit }, { patientId, data }) {
-      return new Promise((resolve, reject) => {
-        apiClient({
+    async editPatient({ commit }, { patientId, data }) {
+      let response = await apiClient({
           method: 'post',
           url: '/api/patients/' + patientId,
           headers: { 'content-type': 'multipart/form-data' },
           data: data,
-        }).then(response => {
-            if (response.status == 200) {
-              commit('setPatient', response.data);
-              resolve()
-            }
-          }).catch(error => {
-              console.error(error);
-              reject(error)
-          })
         })
+        if (response.status == 200) {
+          commit('setPatient', response.data);
+        }
+        return response;
     },
-    getPatient({ commit }, patientId) {
-      return new Promise((resolve, reject) => {
-        apiClient.get('/api/patients/' + patientId)
-          .then((response) => {
-            commit('setPatient', response.data)
-            resolve()
-          }).catch(error => {
-            console.error(error);
-            reject(error)
-          })
-      })
+    async getPatient({ commit }, patientId) {
+      let response = await apiClient.get('/api/patients/' + patientId)
+      if (response.status == 200) {
+        commit('setPatient', response.data)
+      }
+      return response;
     }
 }
 

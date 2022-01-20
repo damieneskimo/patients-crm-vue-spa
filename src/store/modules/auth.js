@@ -1,7 +1,7 @@
 import { apiClient } from '@/api'
 
 const state = () => ({
-    user: null
+  user: null
 })
 
 const getters = {
@@ -9,62 +9,40 @@ const getters = {
 }
 
 const actions = {
-    login({ dispatch }, { data }) {
-        return new Promise((resolve, reject) => {
-            apiClient.get('/sanctum/csrf-cookie')
-                .then(() => {    
-                    apiClient.post('/login', data)
-                    .then(response => {
-                        if (response.status === 204) {
-                            dispatch('getUser')
-                            resolve()
-                        }
-                    }).catch(error => {
-                        console.log(error)
-                        reject(error)
-                    });
-            });
-        })
-    },
-    logout({ commit }) {
-        return new Promise((resolve, reject) => {
-            apiClient.post('/logout').then(response => {
-                if (response.status == 204) {
-                    commit('setUser', null)
-                    resolve();
-                }
-            }).catch(error => {
-                console.error(error);
-                reject(error)
-            });
-        })
-    },
-    getUser({ commit }) {
-        return new Promise((resolve, reject) => {
-            apiClient.get('/api/me')
-            .then(response => {
-                if (response.status === 200) {
-                    commit('setUser', response.data)
-                    resolve();
-                }
-            }).catch(error => {
-                console.error(error);
-                reject(error)
-            });
-        })
+  async login({ dispatch }, { data }) {
+    await apiClient.get('/sanctum/csrf-cookie');
+    let response = await apiClient.post('/login', data);
+    if (response.status === 204) {
+      dispatch('getUser')
     }
+    return response;
+  },
+  async logout({ commit }) {
+    let response = await apiClient.post('/logout');
+    if (response.status == 204) {
+      commit('setUser', null)
+    }
+    return response;
+  },
+  async getUser({ commit }) {
+    let response = await apiClient.get('/api/me');
+    if (response.status === 200) {
+      commit('setUser', response.data);
+    }
+    return response;
+  }
 }
 
 const mutations = {
-    setUser(state, payload) {
-        state.user = payload
-    }
+  setUser(state, payload) {
+    state.user = payload
+  }
 }
 
 export default {
-    namespaced: true,
-    state,
-    getters,
-    actions,
-    mutations
+  namespaced: true,
+  state,
+  getters,
+  actions,
+  mutations
 }

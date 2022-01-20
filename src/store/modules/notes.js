@@ -1,7 +1,7 @@
 import { apiClient } from '@/api'
 
 const state = () => ({
-    notes: []
+  notes: []
 })
 
 const getters = {
@@ -9,57 +9,43 @@ const getters = {
 }
 
 const actions = {
-    getAllNotes({ commit, dispatch }, patientId) {
-        dispatch('general/setIsLoading', {}, {root:true})
+  async getAllNotes({ commit, dispatch }, patientId) {
+    dispatch('general/setIsLoading', {}, {root:true})
 
-        return new Promise((resolve, reject) => {
-            apiClient.get('/api/patients/' + patientId + '/notes')
-                .then(response => {
-                    if (response.status == 200) {
-                        commit('setNotes', response.data)
-                        resolve()
-                    }
-                }).catch(error => {
-                    console.error(error);
-                    reject(error)
-                }).finally(() => {
-                    dispatch('general/setIsLoaded', {}, {root:true})
-                });
-            })
-    },
-    addNote({ commit, dispatch }, { patientId, data }) {
-        dispatch('general/setIsLoading', {}, {root:true})
-
-        return new Promise((resolve, reject) => {
-            apiClient.post('/api/patients/' + patientId + '/notes', data)
-                .then(response => {
-                    if (response.status == 201) {
-                        commit('createNewNote', response.data)
-                        resolve()
-                    }
-                }).catch(error => {
-                    console.error(error);
-                    reject(error)
-                }).finally(() => {
-                    dispatch('general/setIsLoaded', {}, {root:true})
-                });
-            })
+    let response = await apiClient.get('/api/patients/' + patientId + '/notes')
+    if (response.status == 200) {
+        commit('setNotes', response.data)
     }
+    dispatch('general/setIsLoaded', {}, {root:true})
+    
+    return response;
+  },
+  async addNote({ commit, dispatch }, { patientId, data }) {
+    dispatch('general/setIsLoading', {}, {root:true})
+
+    let response = await apiClient.post('/api/patients/' + patientId + '/notes', data)
+    if (response.status == 201) {
+      commit('createNewNote', response.data)
+    }
+    dispatch('general/setIsLoaded', {}, {root:true});
+    
+    return response;
+  }
 }
 
 const mutations = {
-    setNotes(state, payload) {
-        state.notes = payload
-    },
-    createNewNote(state, payload) {
-        state.notes.unshift(payload)
-    }
+  setNotes(state, payload) {
+    state.notes = payload
+  },
+  createNewNote(state, payload) {
+    state.notes.unshift(payload)
+  }
 }
 
 export default {
-    namespaced: true,
-    state,
-    getters,
-    actions,
-    mutations
+  namespaced: true,
+  state,
+  getters,
+  actions,
+  mutations
 }
